@@ -61,5 +61,10 @@ pipeline {
                 '''
             }
         }
+        stage ('install trivy and scan image') {
+            steps {
+                sh 'trivy image karthik:2.0'
+            }
+        }
     }
 }
