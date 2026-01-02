@@ -63,7 +63,13 @@ pipeline {
         }
         stage ('install trivy and scan image') {
             steps {
-                sh 'trivy image karthik:2.0'
+                sh '''
+                   trivy image \
+                    --scanners vuln \
+                    --severity HIGH,CRITICAL \
+                    --exit-code 1 \
+                      karthik:2.0
+                  '''
             }
         }
     }
