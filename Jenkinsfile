@@ -37,17 +37,16 @@ pipeline {
         stage('create Dockerfile') {
             steps {
                 sh '''
-                FROM maven:3.9.12-eclipse-temurin-17 AS build
+                FROM maven:3.9.12-eclipse-temurin-25 AS build
+                ADD . /app
                 WORKDIR /app
-                COPY pom.xml .
-                COPY src ./src
                 RUN mvn clean package -DskipTests
 
-                FROM eclipse-temurin:17-jre-jammy
+                FROM eclipse-temurin:25
+                COPY --from=build /app/target/*.jar /devops/karthik.jar
                 WORKDIR /devops
-                COPY --from=build /app/target/*.jar karthik.jar
                 EXPOSE 8080
-                ENTRYPOINT ["java","-jar","karthik.jar"]
+                CMD ["java","-jar","karthik.jar"]
                 '''
             }
         }
