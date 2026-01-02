@@ -1,0 +1,45 @@
+pipeline {
+    agent { label 'JAVA' }
+
+    triggers {
+        pollSCM('* * * * *')
+    }
+
+    stages {
+        stage('git checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/spring-projects/spring-petclinic.git'
+            }
+        }
+
+        stage('java build') {
+            steps {
+                sh 'mvn clean package -DskipTests'
+            }
+        }
+
+        stage('sonarqube') {
+            steps {
+                withSonarQubeEnv('SONARQUBE') {
+                    sh '''
+                        mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar \
+                        -Dsonar.projectName=spring-petclinic \
+                        -Dsonar.projectKey=karthik23081998_spring-petclinic \
+                        -Dsonar.organization=karthik23081998 \
+                        -Dsonar.host.url=https://sonarcloud.io \
+                        -Dsonar.login=$SONAR_TOKEN
+                    '''
+                }
+            }
+        }
+
+        stage('docker build') {
+            steps {
+                sh '''
+                    docker build -t karthik:1.0 .
+                    docker image ls | grep karthik
+                '''
+            }
+        }
+    }
+}
